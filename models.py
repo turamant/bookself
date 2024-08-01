@@ -32,7 +32,7 @@ class Book:
     @staticmethod
     def update(book_id, update_data):
         books_collection.update_one({"_id": ObjectId(book_id)}, {"$set": update_data})
-
+    
     @staticmethod
     def delete(book_id):
         books_collection.delete_one({"_id": ObjectId(book_id)})

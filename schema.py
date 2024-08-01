@@ -76,8 +76,54 @@ class CreateBook(graphene.Mutation):
             year=book.year,
             count=book.count
         ))
+        
+        
+class UpdateBook(graphene.Mutation):
+    class Arguments:
+        book_id = graphene.String(required=True)
+        title = graphene.String()
+        category = graphene.String()
+        author = graphene.String()
+        cover = graphene.String()
+        price = graphene.Float()
+        poster = graphene.String()
+        year = graphene.Int()
+        count = graphene.Int()
+
+    book = graphene.Field(BookType)
+
+    def mutate(self, info, book_id, title=None, category=None, author=None, cover=None, price=None, poster=None, year=None, count=None):
+        # Обновляем книгу в базе данных
+        update_data = {
+            "title": title,
+            "category": category,
+            "author": author,
+            "cover": cover,
+            "price": price,
+            "poster": poster,
+            "year": year,
+            "count": count
+        }
+        BookModel.update(book_id, update_data)
+
+        # Получаем обновленную книгу из базы данных
+        book = BookModel.get_by_id(book_id)
+
+        # Возвращаем обновленную книгу в виде BookType
+        return UpdateBook(book=BookType(
+            id=str(book['_id']),
+            title=book['title'],
+            category=book['category'],
+            author=book['author'],
+            cover=book['cover'],
+            price=book['price'],
+            poster=book['poster'],
+            year=book['year'],
+            count=book['count']
+        ))
 
 class Mutation(graphene.ObjectType):
     create_book = CreateBook.Field()
+    update_book = UpdateBook.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
