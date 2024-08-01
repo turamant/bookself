@@ -121,9 +121,58 @@ class UpdateBook(graphene.Mutation):
             year=book['year'],
             count=book['count']
         ))
+        
+        
+class DeleteBook(graphene.Mutation):
+    class Arguments:
+        book_id = graphene.String(required=True)
+
+    book = graphene.Field(BookType)
+    success = graphene.Boolean()
+
+    def mutate(self, info, book_id):
+        # Получаем книгу из базы данных
+        book = BookModel.get_by_id(book_id)
+
+        if book:
+            # Удаляем книгу из базы данных
+            BookModel.delete(book_id)
+
+            # Возвращаем удаленную книгу в виде BookType
+            return DeleteBook(book=BookType(
+                id=str(book['_id']),
+                title=book['title'],
+                category=book['category'],
+                author=book['author'],
+                cover=book['cover'],
+                price=book['price'],
+                poster=book['poster'],
+                year=book['year'],
+                count=book['count']
+            ), success=True)
+        else:
+            # Если книга не найдена, возвращаем успех=False
+            return DeleteBook(book=None, success=False)
+
+class DeleteAllBooks(graphene.Mutation):
+    class Arguments:
+        pass
+
+    success = graphene.Boolean()
+
+    def mutate(self, info):
+        # Удаляем все книги из базы данных
+        BookModel.delete_all()
+
+        # Возвращаем успех
+        return DeleteAllBooks(success=True)
+
 
 class Mutation(graphene.ObjectType):
     create_book = CreateBook.Field()
     update_book = UpdateBook.Field()
-
+    delete_book = DeleteBook.Field()
+    delete_all_books = DeleteAllBooks.Field()
+    
+    
 schema = graphene.Schema(query=Query, mutation=Mutation)
