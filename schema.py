@@ -17,7 +17,17 @@ class Query(graphene.ObjectType):
 
     def resolve_all_books(self, info):
         books = BookModel.get_all()
-        return [BookType(**book) for book in books]
+        return [BookType(
+            id=str(book['_id']),
+            title=book['title'],
+            category=book['category'],
+            author=book['author'],
+            cover=book['cover'],
+            price=book['price'],
+            poster=book['poster'],
+            year=book['year'],
+            count=book['count']
+        ) for book in books]
 
 class CreateBook(graphene.Mutation):
     class Arguments:
@@ -33,9 +43,21 @@ class CreateBook(graphene.Mutation):
     book = graphene.Field(BookType)
 
     def mutate(self, info, title, category, author, cover, price, poster, year, count):
+        # Create a new book instance
         book = BookModel(title, category, author, cover, price, poster, year, count)
         book.save()
-        return CreateBook(book=BookType(**book.__dict__))
+        # Create a BookType instance with the correct fields
+        return CreateBook(book=BookType(
+            id=str(book._id),
+            title=book.title,
+            category=book.category,
+            author=book.author,
+            cover=book.cover,
+            price=book.price,
+            poster=book.poster,
+            year=book.year,
+            count=book.count
+        ))
 
 class Mutation(graphene.ObjectType):
     create_book = CreateBook.Field()
