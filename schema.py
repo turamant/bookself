@@ -14,6 +14,7 @@ class BookType(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     all_books = graphene.List(BookType)
+    book = graphene.Field(BookType, book_id=graphene.String())
 
     def resolve_all_books(self, info):
         books = BookModel.get_all()
@@ -28,6 +29,23 @@ class Query(graphene.ObjectType):
             year=book['year'],
             count=book['count']
         ) for book in books]
+        
+    def resolve_book(self, info, book_id):
+        book = BookModel.get_by_id(book_id)
+        if book:
+            return BookType(
+                id=str(book['_id']),
+                title=book['title'],
+                category=book['category'],
+                author=book['author'],
+                cover=book['cover'],
+                price=book['price'],
+                poster=book['poster'],
+                year=book['year'],
+                count=book['count']
+            )
+        else:
+            return None
 
 class CreateBook(graphene.Mutation):
     class Arguments:

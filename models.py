@@ -27,6 +27,7 @@ class Book:
     @staticmethod
     def get_by_id(book_id):
         return books_collection.find_one({"_id": ObjectId(book_id)})
+    
 
     @staticmethod
     def update(book_id, update_data):
